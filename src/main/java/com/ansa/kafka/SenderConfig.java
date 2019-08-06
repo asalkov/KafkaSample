@@ -30,6 +30,8 @@ public class SenderConfig {
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
                 KafkaAvroSerializer.class);
 
+        props.put("schema.registry.url", "http://mock:8081");
+
         return props;
     }
 

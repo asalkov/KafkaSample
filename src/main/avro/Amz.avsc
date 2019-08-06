@@ -1,0 +1,11 @@
+{
+  "type" : "record",
+  "name" : "app",
+  "fields" : [ {
+    "name" : "name",
+    "type" : {
+      "type" : "int",
+      "logicalType" : "date"
+    }
+  } ]
+}

@@ -7,6 +7,7 @@ import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -19,17 +20,6 @@ import java.util.Map;
 
 @Configuration
 public class MockSerdeConfig {
-    private KafkaProperties props;
-
-    public MockSerdeConfig(KafkaProperties kafkaProperties) {
-        props = kafkaProperties;
-    }
-
-    /**
-     * Mock schema registry bean used by Kafka Avro Serde since
-     * the @EmbeddedKafka setup doesn't include a schema registry.
-     * @return MockSchemaRegistryClient instance
-     */
     @Bean
     public MockSchemaRegistryClient schemaRegistryClient() {
         return new MockSchemaRegistryClient();
@@ -44,6 +34,18 @@ public class MockSerdeConfig {
         return new KafkaAvroSerializer(schemaRegistryClient());
     }
 
+    @Bean
+    public ProducerFactory<String, CustomRecord> producerFactory() {
+        return new DefaultKafkaProducerFactory(producerConfig(),
+                new StringSerializer(),
+                kafkaAvroSerializer());
+    }
+
+    private Map<String, Object> producerConfig() {
+        return new HashMap<>();
+    }
+
+
     /**
      * KafkaAvroDeserializer that uses the MockSchemaRegistryClient.
      * The props must be provided so that specific.avro.reader: true
@@ -52,54 +54,6 @@ public class MockSerdeConfig {
      */
     @Bean
     public KafkaAvroDeserializer kafkaAvroDeserializer() {
-        return new KafkaAvroDeserializer(schemaRegistryClient(), props.buildConsumerProperties());
-    }
-
-    /**
-     * Configures the kafka producer factory to use the overridden
-     * KafkaAvroDeserializer so that the MockSchemaRegistryClient
-     * is used rather than trying to reach out via HTTP to a schema registry
-     * @return DefaultKafkaProducerFactory instance
-     */
-    @Bean
-    public ProducerFactory<String, CustomRecord> producerFactory() {
-        return new DefaultKafkaProducerFactory<>(producerConfig());
-//        return new DefaultKafkaProducerFactory(
-//                props.buildProducerProperties(),
-//                new StringSerializer(),
-//                kafkaAvroSerializer()
-//        );
-    }
-
-    private Map<String, Object> producerConfig() {
-        return new HashMap<>();
-    }
-
-    /**
-     * Configures the kafka consumer factory to use the overridden
-     * KafkaAvroSerializer so that the MockSchemaRegistryClient
-     * is used rather than trying to reach out via HTTP to a schema registry
-     * @return DefaultKafkaConsumerFactory instance
-     */
-    @Bean
-    public DefaultKafkaConsumerFactory consumerFactory() {
-        return new DefaultKafkaConsumerFactory(
-                props.buildConsumerProperties(),
-                new StringDeserializer(),
-                kafkaAvroDeserializer()
-        );
-    }
-
-    /**
-     * Configure the ListenerContainerFactory to use the overridden
-     * consumer factory so that the MockSchemaRegistryClient is used
-     * under the covers by all consumers when deserializing Avro data.
-     * @return ConcurrentKafkaListenerContainerFactory instance
-     */
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory factory = new ConcurrentKafkaListenerContainerFactory();
-        factory.setConsumerFactory(consumerFactory());
-        return factory;
+        return new KafkaAvroDeserializer(schemaRegistryClient());
     }
 }

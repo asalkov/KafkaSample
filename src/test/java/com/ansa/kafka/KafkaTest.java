@@ -26,8 +26,7 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {SenderConfig.class, MockSerdeConfig.class})
-
+@SpringBootTest
 public class KafkaTest {
 
     private static final Logger LOGGER =
