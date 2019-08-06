@@ -1,1 +1,15 @@
-{"type":"record","name":"org.apache.avro.Datetime","fields":[{"name":"ms","type":"long"}]}"
+{
+  "type" : "record",
+  "name" : "CustomRecord",
+  "namespace" : "com.ansa.model",
+  "fields" : [ {
+    "name" : "date",
+    "type" : {
+      "type" : "int",
+      "logicalType" : "date"
+    }
+  }, {
+    "name" : "name",
+    "type" : "string"
+  } ]
+}

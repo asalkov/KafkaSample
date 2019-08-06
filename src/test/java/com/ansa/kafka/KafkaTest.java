@@ -1,5 +1,6 @@
 package com.ansa.kafka;
 
+import com.ansa.model.CustomRecord;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -20,18 +21,20 @@ import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(classes = {SenderConfig.class, MockSerdeConfig.class})
+
 public class KafkaTest {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(KafkaTest.class);
 
     @Autowired
-    public KafkaTemplate<String, String> template;
+    public KafkaTemplate<String, CustomRecord> template;
 
     @Autowired
     public Sender sender;
@@ -60,11 +63,14 @@ public class KafkaTest {
         Consumer<String, String> consumer = cf.createConsumer();
         embeddedKafka.getEmbeddedKafka().consumeFromAllEmbeddedTopics(consumer);
 
-        sender.send("some value");
+        CustomRecord record = new CustomRecord();
+        record.setDate(LocalDate.now());
+        record.setName("First");
+        sender.send(record);
 
-        ConsumerRecord record = KafkaTestUtils.getSingleRecord(consumer, "foo");
-
-        System.out.println(record);
+//        ConsumerRecord record = KafkaTestUtils.getSingleRecord(consumer, "foo");
+//
+//        System.out.println(record);
     }
 
     @After
