@@ -1,0 +1,1 @@
+{"type":"record","name":"org.apache.avro.Datetime","fields":[{"name":"ms","type":"long"}]}"
